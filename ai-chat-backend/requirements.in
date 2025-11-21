@@ -1,0 +1,14 @@
+fastapi
+fastapi-mail
+jinja2
+langchain-chroma
+langchain-ollama
+ollama
+openai
+passlib
+pydantic
+pydantic-settings
+pyjwt
+redis
+sqlalchemy
+sqlmodel

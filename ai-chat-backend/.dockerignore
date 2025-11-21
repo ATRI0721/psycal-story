@@ -1,0 +1,11 @@
+test/
+
+ai-chat-backend/
+
+*.mkd
+
+.gitignore
+
+ai_chat.db
+
+.env

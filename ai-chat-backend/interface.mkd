@@ -1,0 +1,391 @@
+# AI 聊天系统接口文档
+
+## 基础信息
+
+- **Base URL**: `/api/v1`
+- **认证方式**: Bearer Token (JWT)
+- 所有接口请求头需包含:
+  
+  ```http
+  Content-Type: application/json
+  Authorization: Bearer <your_token>
+  ```
+
+---
+
+## 认证模块
+
+### 1. 发送验证码
+
+- **URL**: `/auth/send-verification/{type}`
+- **Method**: POST
+- **Path Parameters**:
+  - `type`: 验证码类型 (`register`|`login`|`reset`)
+- **Request Body**:
+  
+  ```json
+  {
+    "email": "user@example.com"
+  }
+  ```
+
+- **Response**:
+
+  ```json
+  {
+    "message": "Verification code sent"
+  }
+  ```
+
+### 2. 验证验证码
+
+- **URL**: `/auth/verify-verification`
+- **Method**: POST
+- **Request Body**:
+
+  ```json
+  {
+    "email": "user@example.com",
+    "verification_code": "123456"
+  }
+  ```
+
+- **Response**:
+
+  ```json
+  {
+    "message": "Email verified",
+    "valid": true
+  }
+  ```
+
+### 3. Token验证
+
+- **URL**: `/auth/verify`
+- **Method**: GET
+- **Response**:
+
+  ```json
+  {
+    "headers": {
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    },
+    "body": {
+      "user": {
+        "id": "user_id",
+        "email": "user@example.com"
+      }
+    }
+  }
+  ```
+
+### 4. 刷新Token
+
+- **URL**: `/auth/refresh-token`
+- **Method**: GET
+- **Response**: 同Token验证接口
+
+---
+
+## 用户管理模块
+
+### 1. 用户注册
+
+- **URL**: `/user/register`
+- **Method**: POST
+- **Request Body**:
+
+  ```json
+  {
+    "email": "user@example.com",
+    "verification_code": "123456",
+    "password": "password123"
+  }
+  ```
+
+- **Response**:
+
+  ```json
+  {
+    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "user": {
+      "id": "user_id",
+      "email": "user@example.com"
+    }
+  }
+  ```
+
+### 2. 验证码登录
+
+- **URL**: `/user/login/code`
+- **Method**: POST
+- **Request Body**:
+
+  ```json
+  {
+    "email": "user@example.com",
+    "verification_code": "123456"
+  }
+  ```
+
+- **Response**: 同注册接口
+
+### 3. 密码登录
+
+- **URL**: `/user/login/password`
+- **Method**: POST
+- **Request Body**:
+
+  ```json
+  {
+    "email": "user@example.com",
+    "password": "password123"
+  }
+  ```
+
+- **Response**: 同注册接口
+
+### 4. 重置密码
+
+- **URL**: `/user/reset-password`
+- **Method**: POST
+- **Request Body**:
+
+  ```json
+  {
+    "email": "user@example.com",
+    "verification_code": "123456",
+    "new_password": "new_password123"
+  }
+  ```
+
+- **Response**:
+
+  ```json
+  {
+    "message": "Password updated"
+  }
+  ```
+
+### 5. 删除用户
+
+- **URL**: `/user/delete`
+- **Method**: DELETE
+- **Response**:
+
+  ```json
+  {
+    "message": "User deleted"
+  }
+  ```
+
+---
+
+## 对话管理模块
+
+conversation:
+
+- `id`: 对话ID
+- `title`: 对话标题
+- `update_time`: 对话更新时间(ISO 8601格式)
+
+### 1. 获取对话列表
+
+- **URL**: `/chat/conversations`
+- **Method**: GET
+- **Response**:
+
+  ```json
+  [
+    {
+      "id": "conv_123",
+      "title": "对话标题",
+      "update_time": "2023-01-01T00:00:00"
+    }
+  ]
+  ```
+
+### 2. 创建新对话
+
+- **URL**: `/chat/conversation`
+- **Method**: POST
+- **Request Body**:
+
+  ```json
+  {
+    "title": "新对话",
+  }
+  ```
+
+- **Response**:
+
+  ```json
+  {
+    "id": "conv_123",
+    "title": "新对话",
+    "update_time": "2023-01-01T00:00:00"
+  }
+  ```
+
+### 3. 获取对话消息
+
+- **URL**: `/chat/conversation/{conversation_id}/messages`
+- **Method**: GET
+- **Response**:
+
+  ```json
+  [
+    {
+      "id": "msg_123",
+      "content": "消息内容",
+      "role": "user",
+      "conversation_id": "conv_123",
+      "created_at": "2023-01-01T00:00:00"
+    }
+  ]
+  ```
+
+### 4. 更新对话标题
+
+- **URL**: `/chat/conversation/{conversation_id}`
+- **Method**: PATCH
+- **Request Body**:
+
+  ```json
+  {
+    "title": "新标题"
+  }
+  ```
+
+- **Response**:
+
+  ```json
+  {
+    "id": "conv_123",
+    "title": "对话标题",
+    "update_time": "2023-01-01T00:00:00"
+  }
+  ```
+
+### 5. 生成对话标题
+
+- **URL**: `/chat/conversation/{conversation_id}/generate-title`
+- **Method**: GET
+- **Response**:(SSE流式响应)
+
+  ```json
+  {
+    "type": "title",
+    "conversation_id": "conv_123",
+    "value": "对话标题",
+    "update_time?": "2023-01-01T00:00:00",
+    "done": false
+  }
+  ```
+
+### 6. 删除对话
+
+- **URL**: `/chat/conversation/{conversation_id}`
+- **Method**: DELETE
+- **Response**:
+
+  ```json
+  {
+    "message": "success"
+  }
+  ```
+
+### 7s. 删除所有对话
+
+- **URL**: `/chat/conversations`
+- **Method**: DELETE
+- **Response**:
+
+  ```json
+  {
+    "message": "success"
+  }
+  ```
+
+---
+
+## 消息处理模块
+
+### 1. 流式聊天接口
+
+- **URL**: `/chat/completions/{conversation_id}`
+- **Method**: POST
+- **Request Body**:
+
+  ```json
+  {
+    "message": "你好",
+  }
+  ```
+
+- **Response**: (SSE流式响应)
+
+  ```json
+  {"type": "init", "user_message_id": "msg_123", "ai_message_id": "msg_456", "done": false}
+  ```
+
+  ```json
+  {"type": "message", "id": "msg_456", "value": "你好！", "done": false}
+  ```
+
+  ```json
+  {"type": "message", "id": "msg_456", "value": "有什么可以帮助你的？", "done": true}
+  ```
+
+### 2. 重新生成回复
+
+- **URL**: `/chat/completions/{conversation_id}/regenerate/{message_id}`
+- **Method**: GET
+- **Response**: 同流式聊天接口
+
+---
+
+## 接口流程图
+
+```mermaid
+graph TD
+    A[认证模块] --> A1[/auth/send-verification POST]
+    A --> A2[/auth/verify-verification POST]
+    A --> A3[/auth/verify GET]
+    A --> A4[/auth/refresh-token GET]
+    
+    B[用户管理] --> B1[/user/register POST]
+    B --> B2[/user/login/code POST]
+    B --> B3[/user/login/password POST]
+    B --> B4[/user/reset-password POST]
+    B --> B5[/user/delete DELETE]
+    
+    C[对话管理] --> C1[/chat/conversations GET]
+    C --> C2[/chat/conversation POST]
+    C --> C3[/chat/conversation/{id}/messages GET]
+    C --> C4[/chat/conversation/{id} PATCH]
+    C --> C5[/chat/conversation/{id} DELETE]
+    C --> C6[/chat/conversations DELETE]
+    
+    D[消息处理] --> D1[/chat/completions/{id} POST]
+    D --> D2[/chat/completions/{id}/regenerate/{msg_id} GET]
+```
+
+---
+
+## 状态码说明
+
+- `200`: 请求成功
+- `400`: 请求参数错误/验证码错误
+- `401`: 身份验证失败
+- `404`: 资源不存在
+- `500`: 服务器内部错误
+
+---
+
+## 注意事项
+
+1. 所有需要认证的接口必须携带有效的Authorization头
+2. SSE连接需要保持持久化连接
+3. 对话和消息ID使用UUID格式
+4. 时间格式均为ISO 8601格式

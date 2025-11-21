@@ -1,0 +1,54 @@
+@import "tailwindcss";
+@plugin "daisyui" ;
+@plugin "daisyui/theme" {
+    name: "light";
+    default: true;
+    --color-primary: #4d6bfe;
+    --color-primary-content: #c6dcf8;
+    --base-200: #f3f4f6;
+    --hover-bg: #EFF6FF;
+    --button-bg: #DBEAFE;
+    --conversations-bg: #DBEAFE;
+    --inputarea-bg: #F3F4F6;
+}
+@plugin "daisyui/theme" {
+    name: "dark";
+    default: true;
+    --base-100: #292A2D;
+    --hover-bg: #333333;
+    --button-bg: #4D6BFE;
+    --conversations-bg: #494949;
+    --inputarea-bg: #404045;
+}
+
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+@utility button-like {
+    @apply cursor-pointer rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700;
+}
+
+@utility active-bg {
+    @apply bg-blue-200 dark:bg-blue-700;
+}
+
+/* --- 自定义动画 --- */
+@keyframes ping-once {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.25);
+        opacity: 0.8;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@utility animate-ping-once {
+    animation: ping-once 0.4s ease-in-out;
+}
