@@ -1,3 +1,4 @@
+from app.models.dto import ConversationDTO, StoryDTO, StoryMessageDTO
 from openai import AsyncOpenAI
 from app.ai.initmessages import start_story
 from app.ai.basemodel import BaseModel
@@ -41,7 +42,7 @@ class TopicModel(BaseModel):
     def __init__(self):
         super().__init__(prompts, chat)
 
-    async def generate_ai_response(self, conversation: Conversation):
+    async def generate_ai_response(self, conversation: ConversationDTO):
         user_input = conversation.messages[-1].content
         user_input = f"{self.prompts['problem']}{user_input}"
         stream = await self.chat.chat.completions.create(
@@ -54,7 +55,7 @@ class TopicModel(BaseModel):
         async for content in self._stream_response_content(stream):
             yield content
     
-    async def generate_response(self, story: Story, story_message: StoryMessage, user_message: str):
+    async def generate_response(self, story: StoryDTO, story_message: StoryMessageDTO, user_message: str):
         if len(story_message.conversation.messages) == 5:
             story.situation = user_message
             story.problem_type = story_message.conversation.messages[1].content

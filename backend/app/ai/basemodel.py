@@ -1,3 +1,4 @@
+from app.models.dto import StoryDTO, StoryMessageDTO
 from openai import AsyncOpenAI, AsyncStream
 
 from app.models.database import Conversation, Message, Story, StoryMessage
@@ -22,7 +23,7 @@ class BaseModel:
             if content:
                 yield content
 
-    def get_main_story(self, story: Story, story_message: StoryMessage):
+    def get_main_story(self, story: StoryDTO, story_message: StoryMessageDTO):
         r = []
         m = { msg.id: msg for msg in story.story_messages }
         s = story_message

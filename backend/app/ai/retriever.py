@@ -2,6 +2,7 @@ import json
 from rank_bm25 import BM25Okapi
 import numpy as np
 from pathlib import Path
+
 from sentence_transformers import SentenceTransformer, CrossEncoder
 import faiss
 import pickle
@@ -20,8 +21,6 @@ def load_jsonl(path):
             try:
                 obj = orjson.loads(line)
                 data.append(obj)
-
-
 
             except orjson.JSONDecodeError as e:
                 print(f"[WARN] JSON decode error at line: {line[:50]}...  skip")

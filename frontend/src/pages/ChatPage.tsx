@@ -1,15 +1,14 @@
 import { useEffect } from "react";
 import {
-  ChatArea,
   ConvsationArea,
   StoryArea,
 } from "../components/Chat/ChatArea";
 import { Sidebar } from "../components/Chat/Sidebar";
-import { storyState, storyActions, storyGetters } from "../store/storyStore";
+import { storyState } from "../store/storyStore";
 import { useSnapshot } from "valtio";
 import { storyService } from "../services/storyService";
 import { NewStoryButton } from "../components/Chat/NewStoryButton";
-import { uiActions, uiState } from "../store/uiStore";
+import { uiState } from "../store/uiStore";
 
 export const ChatPage = () => {
   // ---- snap 整个 storyState（推荐） ----

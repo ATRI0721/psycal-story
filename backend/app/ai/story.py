@@ -1,3 +1,4 @@
+from app.models.dto import StoryDTO, StoryMessageDTO
 from openai import AsyncOpenAI
 from app.core.config import settings
 from app.ai.basemodel import BaseModel
@@ -42,7 +43,7 @@ class StoryModel(BaseModel):
     def __init__(self):
         super().__init__(prompts, chat)
     
-    async def generate_response(self, story: Story, story_message: StoryMessage, user_message: str):
+    async def generate_response(self, story: StoryDTO, story_message: StoryMessageDTO, user_message: str):
         stream = await self.chat.chat.completions.create(
             model=settings.CHAT_MODEL,
             messages = [{"role": "system", "content": self.prompts["system"].format(

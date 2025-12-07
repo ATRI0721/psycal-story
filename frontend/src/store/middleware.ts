@@ -28,13 +28,13 @@ export const handleError = (key: string, error: Error | unknown) => {
 }
 
 
-type ErrorHandler = (error: unknown) => void;
+type ErrorHandler = (error: unknown, key: string, store: any) => void;
 
 /**
  * Zustand 中间件，用于为所有 action 自动添加 try...catch 错误处理。
  * @param errorHandler 可选的自定义错误处理函数。
  */
-export const baseErrorHandlingMiddleware = <T>(
+export const baseErrorHandlingMiddleware = <T extends Record<string, any>>(
   errorHandler?: ErrorHandler
 ) => (config: StateCreator<T>): StateCreator<T> => {
   // 返回一个新的 store 配置
@@ -48,7 +48,7 @@ export const baseErrorHandlingMiddleware = <T>(
 
       // 如果属性是一个函数，我们就包装它
       if (typeof property === 'function') {
-        acc[key as keyof T] = (...args: any[]) => {
+        (acc as any)[key] = (...args: any[]) => {
           try {
             // 执行原始的 action
             return (property as any).apply(initializedStore, args);
@@ -63,7 +63,7 @@ export const baseErrorHandlingMiddleware = <T>(
           }
         };
       } else {
-        acc[key as keyof T] = property;
+        (acc as any)[key] = property;
       }
       return acc;
     }, {} as T);
@@ -72,4 +72,6 @@ export const baseErrorHandlingMiddleware = <T>(
   };
 };
 
-export const errorHandlingMiddleware = <T>() => baseErrorHandlingMiddleware<T>(handleError);
+export const errorHandlingMiddleware = <T extends Record<string, any>>() => baseErrorHandlingMiddleware<T>((error, key) => {
+  handleError(key, error);
+});

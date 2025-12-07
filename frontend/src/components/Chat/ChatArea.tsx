@@ -106,7 +106,13 @@ export const StoryArea = () => {
     (s) => id == s.id
   );
   const state = storyUIState[id] || { loading: false, input: "" };
-  const handleSubmit = (s: string) => currentStoryMessage?.stage==="completed"?functionalToast("当前故事已结束","MESSAGE",5000):sendMessageToBranch(s);
+  const handleSubmit = async (s: string) => {
+    if (currentStoryMessage?.stage === "completed") {
+      functionalToast("当前故事已结束", "MESSAGE", 5000);
+      return;
+    }
+    return sendMessageToBranch(s);
+  };
   return (
     currentStoryMessage && currentStory ? <ChatArea
       title={currentStory.title}

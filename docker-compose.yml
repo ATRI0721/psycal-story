@@ -1,0 +1,46 @@
+services:
+  backend:
+    build: ./backend
+    container_name: backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/data:/data
+      - /c/Users/Chtholly/.cache/huggingface/hub/models--BAAI--bge-large-zh/snapshots/b5d9f5c027e87b6f0b6fa4b614f8f9cdc45ce0e8:/app/models/embedder
+      - /c/Users/Chtholly/.cache/huggingface/hub/models--BAAI--bge-reranker-v2-m3/snapshots/953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e:/app/models/reranker
+    environment:
+      - SECRET_KEY=${SECRET_KEY}
+      - MODEL_API_KEY=${MODEL_API_KEY}
+      - EMBEDDER_MODEL=/app/models/embedder
+      - RERANK_MODEL=/app/models/reranker
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - app-network
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      - BACKEND_API_URL=http://backend:8000/api/
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

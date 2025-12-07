@@ -12,15 +12,24 @@ interface Node {
   emphasis?: any;
 }
 
+interface EChartsClickParams {
+  data: {
+    msg: {
+      story_id: string;
+      id: string;
+    };
+  };
+}
+
 const onEvents = {
-  click: (params) => {
+  click: (params: EChartsClickParams) => {
     const node = params.data;
     // 使用 ID 而不是对象引用，确保总是触发更新
     storyActions.selectStoryMessageById(node.msg.story_id, node.msg.id);
   },
 };
 
-const getOption = (data) => ({
+const getOption = (data: any) => ({
   // tooltip: {
   //   trigger: "item",
   //   renderMode: "richText",

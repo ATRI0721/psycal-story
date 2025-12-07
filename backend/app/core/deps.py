@@ -11,7 +11,7 @@ from sqlmodel import Session
 from app.core import security
 from app.core.config import settings
 from app.core.db import get_session
-from app.models.database import Story, Message, StoryMessage, User
+from app.models.database import Conversation, Story, Message, StoryMessage, User
 
 
 reusable_oauth2 = OAuth2PasswordBearer(tokenUrl="/api/vi/user/login/password")
@@ -43,7 +43,7 @@ CurrentUser = Annotated[User, Depends(get_current_user)]
 
 def get_story(session: SessionDep, current_user: CurrentUser, story_id: str) -> Story:
     # stmt = select(Story).options(
-    #         selectinload(Story.story_messages) 
+    #         selectinload(Story.story_messages).selectinload(StoryMessage.conversation).selectinload(Conversation.messages) 
     #     ).where(Story.id == story_id)
         
     # story = session.exec(stmt).first()

@@ -14,6 +14,7 @@ from app.ai.story import storymodel
 from app.ai.helper import helpermodel
 from app.ai.topic import topicmodel
 from app.utils import generate_uuid, get_time
+from app.models.dto import StoryDTO, MessageDTO, ConversationDTO, UserDTO, orm_to_story_dto, orm_to_message_dto, orm_to_conversation_dto, orm_to_story_message_dto, orm_to_user_dto
 
 router = APIRouter(tags=["chat"], prefix="/chat")
 
@@ -100,12 +101,17 @@ async def get_story_completions(
     session.add(ai_message)
     session.flush()  # 获取消息ID
     session.commit()
+    last_message_dto = orm_to_story_message_dto(last_message)
+    user_message_dto = orm_to_story_message_dto(user_message)
+    ai_message_dto = orm_to_story_message_dto(ai_message)
+    story_dto = orm_to_story_dto(story)
+    session.close()
 
     async def respond() -> AsyncGenerator[str, None]:
         
         try:
             buffer = StringIO()
-            async for content in generate_response(storymodel, story, last_message, user_message, ai_message, buffer):
+            async for content in generate_response(storymodel, story_dto, last_message_dto, user_message_dto, ai_message_dto, buffer):
                 yield content
             final_content= buffer.getvalue()
             buffer.close()
@@ -162,15 +168,20 @@ async def get_conversation_completions(
     session.add(ai_message)
     session.flush()  # 获取消息ID
     session.commit()
+    last_message_dto = orm_to_story_message_dto(last_message)
+    user_message_dto = orm_to_message_dto(user_message)
+    ai_message_dto = orm_to_message_dto(ai_message)
+    story_dto = orm_to_story_dto(story)
+    session.close()
 
     async def respond() -> AsyncGenerator[str, None]:
         model = topicmodel if last_message.stage == "initial" else helpermodel
 
         try:
             buffer = StringIO()
-            async for content in generate_response(model, story, last_message, user_message, ai_message, buffer):
+            async for content in generate_response(model, story_dto, last_message_dto, user_message_dto, ai_message_dto, buffer):
                 yield content
-            ai_message.content = buffer.getvalue()
+            final_content = buffer.getvalue()
             buffer.close()
 
             yield format_event({
@@ -181,11 +192,12 @@ async def get_conversation_completions(
             })
 
             with create_db_session() as final_session: 
-                last_message_to_update: StoryMessage = final_session.get(StoryMessage, last_message.id)
-                story_to_update: Story = final_session.get(Story, story.id)
+                ai_message_to_update: Message = final_session.get(Message, ai_message_dto.id)
+                story_to_update: Story = final_session.get(Story, story_dto.id)
+                story_to_update.situation = story_dto.situation
+                story_to_update.problem_type = story_dto.problem_type
                 story_to_update.updated_at = get_time()
-                last_message_to_update.conversation.messages.append(user_message)
-                last_message_to_update.conversation.messages.append(ai_message)
+                ai_message_to_update.content = final_content
                 final_session.commit()
             
         except Exception as e:

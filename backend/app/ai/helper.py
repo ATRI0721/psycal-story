@@ -1,3 +1,4 @@
+from app.models.dto import StoryDTO, StoryMessageDTO
 from openai import AsyncOpenAI
 
 from app.ai.basemodel import BaseModel
@@ -38,7 +39,7 @@ class HelperModel(BaseModel):
     def __init__(self):
         super().__init__(prompts, chat)
     
-    async def generate_response(self, story: Story, story_message: StoryMessage, user_message: str):
+    async def generate_response(self, story: StoryDTO, story_message: StoryMessageDTO, user_message: str):
         conversation_msgs = [
             {"role": m.role, "content": m.content} for m in story_message.conversation.messages
         ]
