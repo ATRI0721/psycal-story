@@ -10,8 +10,6 @@ test/
 
 prompts.py
 
-docker-compose.yml
-
 kb.py
 
 .env
