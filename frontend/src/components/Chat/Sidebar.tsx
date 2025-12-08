@@ -71,7 +71,7 @@ const UnfoldSidebar = ({
           <StoryTree />
         )}
       </div>
-      <button className="btn btn-soft btn-primary" onClick={()=>{uiActions.getStoryUIState(selectedStoryId).showConversation =
+      <button className="btn btn-soft btn-primary" disabled={true} onClick={()=>{uiActions.getStoryUIState(selectedStoryId).showConversation =
         !showConversation;}}>{showConversation?"关闭对话":"展开对话"}</button>
       <Avatar fold={false} />
     </div>

@@ -152,6 +152,8 @@ export const storyService = {
             msg.id = data.user_message_id;
             msg.children_id = [data.ai_message_id]
           });
+
+          
           storyActions.updateStoryMessage(
             story_id,
             ai_message_id,
@@ -176,6 +178,7 @@ export const storyService = {
         }
       }
       await handleStream(stream, handleChunk);
+      storyService.sendMessageToConversation("开始");
     } catch (error) {
       handleError("sendMessageToBranch", error);
       storyActions.updateStoryMessage(story_id, ai_message_id, (msg) => {

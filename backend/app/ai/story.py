@@ -21,14 +21,14 @@ system_prompt='''
 一轮轮输出,每轮的输出格式严格按如下格式:
 1.  首先，直接输出故事内容，可以使用段落、加粗等任何Markdown格式，但不要有"故事内容:"这样的前缀标签。
 2.  空一行。
-3.  接下来三行，每行是一个选项，必须使用Markdown链接格式：[选项X: 选项描述](action:choice-X)，其中X是1, 2, 3。
+3.  接下来三行，每行是一个选项，必须使用Markdown链接格式：[选项描述](action:choice-X)，其中X是1, 2, 3。
 
 示例（一轮的输出）:
 你走在一条幽暗的森林小径上，xxx
 
-[选项一: xxx](action:choice-1)
-[选项二: xxx](action:choice-2)
-[选项三: xxx](action:choice-3)
+[xxx](action:choice-1)
+[xxx](action:choice-2)
+[xxx](action:choice-3)
 
 结局的输出格式严格按照如下格式(这部分不需要是链接):
 **真实结局:**xxx
