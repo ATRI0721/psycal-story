@@ -10,6 +10,8 @@ services:
       - ${RERANK_MODEL}:/app/models/reranker
     environment:
       - SECRET_KEY=${SECRET_KEY}
+      - CHAT_MODEL=${CHAT_MODEL}
+      - CHAT_MODEL_URL=${CHAT_MODEL_URL}
       - MODEL_API_KEY=${MODEL_API_KEY}
       - EMBEDDER_MODEL=/app/models/embedder
       - RERANK_MODEL=/app/models/reranker
