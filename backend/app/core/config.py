@@ -12,15 +12,16 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 3 * 24 * 60  # 3 days
 
-    CHAT_MODEL: str = "deepseek-chat"
-    CHAT_MODEL_URL: str = "https://api.deepseek.com"
-
-
     # ------------------ 必填项（必须传入环境变量） ------------------
     SECRET_KEY: str = Field(..., description="JWT secret key")
-    MODEL_API_KEY: str = Field(..., description="Model API key")
+    
     EMBEDDER_MODEL: str = Field(..., description="Embedder model path")
     RERANK_MODEL: str = Field(..., description="Rerank model path")
+
+    CHAT_MODEL: str = Field(..., description="Chat model path")
+    CHAT_MODEL_URL: str = Field(..., description="Chat model url")
+    MODEL_API_KEY: str = Field(..., description="Model API key")
+    
 
     # ------------------ 配置 ------------------
     model_config = SettingsConfigDict(
