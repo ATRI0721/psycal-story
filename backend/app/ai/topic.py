@@ -43,7 +43,7 @@ class TopicModel(BaseModel):
         super().__init__(prompts, chat)
 
     async def generate_ai_response(self, conversation: ConversationDTO):
-        user_input = conversation.messages[-1].content
+        user_input = conversation.messages[-2].content
         user_input = f"{self.prompts['problem']}{user_input}"
         stream = await self.chat.chat.completions.create(
             model=settings.CHAT_MODEL,

@@ -21,7 +21,7 @@ export const uiActions = {
   },
   getStoryUIState(id: string) {
     if (!uiState.storyUIState[id])
-      uiState.storyUIState[id] = { input: "", loading: false, showConversation: false };
+      uiState.storyUIState[id] = { input: "", loading: false, showConversation: true };
     return uiState.storyUIState[id];
   },
   getConversationUIState(id: string){

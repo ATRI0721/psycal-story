@@ -77,17 +77,14 @@ function handleClick(actionId: string, details: string = "") {
       storyActions.selectStoryMessage(c);
       return;
     }
-    const storyId = storyState.currentStoryMessage?.story_id;
-    if (!storyId || uiActions.getStoryUIState(storyId).loading) return;
-    uiActions.getStoryUIState(storyId).input = details;
+    const storyId = storyState.currentStoryMessage?.story_id ;
+    if (storyId) uiActions.getStoryUIState(storyId).input = details;
   } else if (
     actionId.startsWith("scenario") ||
     actionId.startsWith("problem")
   ) {
-    const storyMsgId = storyState.currentStoryMessage?.id ?? "";
-    const convUIState = uiActions.getConversationUIState(storyMsgId);
-    if (convUIState.loading) return;
-    convUIState.input = details;
+    const storyMsgId = storyState.currentStoryMessage?.id;
+    if (storyMsgId) uiActions.getConversationUIState(storyMsgId).input = details;
   } else if (actionId.startsWith("start-story")) {
     storyService.sendMessageToBranch("开始故事");
   }

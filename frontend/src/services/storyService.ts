@@ -103,6 +103,11 @@ export const storyService = {
       return;
     }
 
+    if (uiActions.getStoryUIState(currentStoryMessage.story_id).loading){
+      handleError("sendMessageToBranch", new Error("Previous message is still loading."));
+      return;
+    }
+
     const { story_id } = currentStoryMessage;
     const parentMessageId = currentStoryMessage.id;
 
@@ -153,7 +158,6 @@ export const storyService = {
             msg.children_id = [data.ai_message_id]
           });
 
-          
           storyActions.updateStoryMessage(
             story_id,
             ai_message_id,
@@ -178,7 +182,7 @@ export const storyService = {
         }
       }
       await handleStream(stream, handleChunk);
-      storyService.sendMessageToConversation("开始");
+      storyService.sendMessageToConversation("开始", story_id, ai_message_id);
     } catch (error) {
       handleError("sendMessageToBranch", error);
       storyActions.updateStoryMessage(story_id, ai_message_id, (msg) => {
@@ -193,14 +197,18 @@ export const storyService = {
    * 发送旁白消息到当前节点的conversation（核心功能）
    * @param content 用户输入的旁白内容
    */
-  async sendMessageToConversation(content: string) {
-    const currentStoryMessage = storyState.currentStoryMessage;
+  async sendMessageToConversation(content: string, storyId: string, storyMessageId: string) {
+    const currentStoryMessage = storyActions.getStoryMessageById(storyId, storyMessageId);
+
     if (!currentStoryMessage) {
-      console.error("No current story message selected for conversation.");
+      handleError("sendMessageToConversation", new Error("No current story message selected."));
       return;
     }
 
-    const { story_id, id: storyMessageId } = currentStoryMessage;
+    if (uiActions.getConversationUIState(currentStoryMessage.id).loading){
+      handleError("sendMessageToConversation", new Error("Previous message is still loading."));
+      return;
+    }
 
     let ai_message_id = generateTempId();
     let user_message_id = generateTempId();
@@ -212,28 +220,27 @@ export const storyService = {
       content,
     };
 
-
     // 2. 创建一个空的AI消息占位符
     const tempAiMessage: Message = {
       id: ai_message_id,
       role: "assistant",
       content: "",
     };
-    storyActions.appendConversationMessage(tempUserMessage);
-    storyActions.appendConversationMessage(tempAiMessage);
+    storyActions.appendConversationMessage(tempUserMessage, currentStoryMessage);
+    storyActions.appendConversationMessage(tempAiMessage, currentStoryMessage);
     uiActions.getConversationUIState(currentStoryMessage.id).loading = true;
 
     // 3. 调用API并发起流式请求
     try {
       const stream = await chatAPI.sendConversationMessage(
-        story_id,
+        storyId,
         storyMessageId,
         content
       );
       const handleChunk = (data: StreamResponse) => {
         if (data.type === "init") {
           storyActions.updateConversationMessage(
-            story_id,
+            storyId,
             storyMessageId,
             user_message_id,
             (msg) => {
@@ -241,7 +248,7 @@ export const storyService = {
             }
           );
           storyActions.updateConversationMessage(
-            story_id,
+            storyId,
             storyMessageId,
             ai_message_id,
             (msg) => {msg.id = data.ai_message_id;}
@@ -250,7 +257,7 @@ export const storyService = {
           ai_message_id = data.ai_message_id;
         } else if (data.type === "message") {
           storyActions.updateConversationMessage(
-            story_id,
+            storyId,
             storyMessageId,
             ai_message_id,
             (msg) => {msg.content = msg.content + data.value;}
@@ -261,7 +268,7 @@ export const storyService = {
     } catch (error) {
       handleError("sendMessageToConversation", error);
       storyActions.updateConversationMessage(
-        story_id,
+        storyId,
         storyMessageId,
         ai_message_id,
         (msg) => {msg.content = "发送失败，请重试。";}

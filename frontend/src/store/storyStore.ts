@@ -116,6 +116,12 @@ export const storyActions = {
     storyState.currentStoryMessage = msg;
   },
 
+  getStoryMessageById(storyId: string, messageId: string) {
+    const story = storyState.storyCache[storyId];
+    if (!story) return undefined;
+    return story.story_messages.find((m) => m.id === messageId);
+  },
+
   selectStoryMessageById(storyId: string, messageId: string) {
     const story = storyState.storyCache[storyId];
     if (!story) return;
@@ -146,9 +152,11 @@ export const storyActions = {
     updater(story.story_messages[index]);
   },
 
-  appendConversationMessage: (message: Message) => {
-    const { currentStoryMessage } = storyState;
-    if (!currentStoryMessage) return;
+  appendConversationMessage: (message: Message, currentStoryMessage?: StoryMessage) => {
+    if (!currentStoryMessage){
+      if (!storyState.currentStoryMessage) return;
+      currentStoryMessage = storyState.currentStoryMessage;
+    }
     currentStoryMessage.conversation.messages.push(message);
   },
 

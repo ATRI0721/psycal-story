@@ -24,7 +24,6 @@ interface EChartsClickParams {
 const onEvents = {
   click: (params: EChartsClickParams) => {
     const node = params.data;
-    // 使用 ID 而不是对象引用，确保总是触发更新
     storyActions.selectStoryMessageById(node.msg.story_id, node.msg.id);
   },
 };
@@ -35,18 +34,19 @@ const getOption = (data: any) => ({
   //   renderMode: "richText",
   //   formatter: (params) => {
   //     const msg = params.data.msg;
+  //     if (msg.stage === "initial") return "信息搜集";
   //     return msg.content;
   //   },
   //   rich: {
   //     contentStyle: {
-  //       color: "#333",
   //       fontSize: 12,
   //       padding: [10, 10, 5, 10],
-  //       // 如果内容太长，可以设置最大宽度并自动换行
-  //       width: 200,
-  //       // overflow: "breakAll",
   //     },
   //   },
+  //   extraCssText: `word-break: break-all; width: 200px;white-space: normal;`,
+  //   confine: false, // 允许 tooltip 超出图表区域
+  //   appendToBody: true,
+  //   position: "right",
   // },
   series: [
     {
@@ -56,14 +56,14 @@ const getOption = (data: any) => ({
       left: "10%",
       bottom: "10%",
       right: "10%",
-      orient: "vertical",                                                    
+      orient: "vertical",
       symbolSize: 40,
       initialTreeDepth: -1,
       expandAndCollapse: false,
       roam: true,
       layout: {
-        nodeSeparation: 20, // 同一层级节点间的最小距离
-        levelSeparation: 40, // 不同层级间的最小距离
+        nodeSeparation: 20,
+        levelSeparation: 40,
       },
       label: {
         show: false,
@@ -101,7 +101,6 @@ const itemStyles: Record<MessageStage, object> = {
   },
 };
 
-
 const StoryTree = () => {
   const { currentStoryMessage, storyCache } = useSnapshot(storyState);
   const storyBranchMessages = useSnapshot(storyGetters).storyBranchMessages;
@@ -115,16 +114,20 @@ const StoryTree = () => {
     (m, i) => (mp[m.id] = { msg: m as StoryMessage, name: i, children: [] })
   );
   function buildTreeRoot(node: Node, depth: number) {
-    if (node.msg.role === 'user') return buildTreeRoot(mp[node.msg.children_id[0]], depth + 1);
+    if (node.msg.role === "user")
+      return buildTreeRoot(mp[node.msg.children_id[0]], depth + 1);
     node.itemStyle = itemStyles[node.msg.stage];
-    if (storyBranchMessages[depth] && storyBranchMessages[depth].id === node.msg.id) {
+    if (
+      storyBranchMessages[depth] &&
+      storyBranchMessages[depth].id === node.msg.id
+    ) {
       node.itemStyle = {
         ...node.itemStyle,
         shadowBlur: 10,
         shadowColor: "#ff4d4f",
       };
       node.lineStyle = {
-        color: "#333", 
+        color: "#333",
       };
     }
     for (const cid of node.msg.children_id) {
@@ -137,7 +140,7 @@ const StoryTree = () => {
   const option = getOption(data);
 
   return (
-    <div className="w-full h-full overflow-hidden">
+    <div className="w-full h-full">
       <ReactEcharts
         option={option}
         onEvents={onEvents}

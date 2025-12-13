@@ -31,7 +31,9 @@ def load_jsonl(path):
 
 # ===================== Hybrid 检索器 =====================
 class PersistentHybridRetriever:
-    def __init__(self, storage_dir="storage"):
+    def __init__(self, storage_dir=None):
+        if storage_dir is None:
+            storage_dir = str(Path(__file__).parent / "storage")
         self.storage = Path(storage_dir)
         self.storage.mkdir(exist_ok=True)
 
@@ -95,7 +97,7 @@ class Reranker:
         return sorted(items, key=lambda x: x["score_rerank"], reverse=True)
 
 
-retriever = PersistentHybridRetriever(storage_dir="data/storage")
+retriever = PersistentHybridRetriever()
 Reranker_item=Reranker()
     
 

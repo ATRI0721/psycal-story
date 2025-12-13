@@ -6,8 +6,8 @@ services:
       - "8000:8000"
     volumes:
       - ./backend/data:/data
-      - /c/Users/Chtholly/.cache/huggingface/hub/models--BAAI--bge-large-zh/snapshots/b5d9f5c027e87b6f0b6fa4b614f8f9cdc45ce0e8:/app/models/embedder
-      - /c/Users/Chtholly/.cache/huggingface/hub/models--BAAI--bge-reranker-v2-m3/snapshots/953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e:/app/models/reranker
+      - ${EMBEDDER_MODEL}:/app/models/embedder
+      - ${RERANK_MODEL}:/app/models/reranker
     environment:
       - SECRET_KEY=${SECRET_KEY}
       - MODEL_API_KEY=${MODEL_API_KEY}

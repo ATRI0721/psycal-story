@@ -85,8 +85,8 @@ export const ConvsationArea = () => {
   return conversation ? (
     <ChatArea
       title={conversation.title}
-      onSubmit={sendMessageToConversation}
-      messages={conversation.messages}
+      onSubmit={(s) => sendMessageToConversation(s, currentStoryMessage.story_id, currentStoryMessage.id)}
+      messages={conversation.messages.filter((s)=>s.content.length || s.role==="assistant")}
       loading={state.loading}
       input={state.input}
       setInput={(s) => uiActions.getConversationUIState(currentStoryMessage.id).input=s}

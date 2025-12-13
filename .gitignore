@@ -73,3 +73,5 @@ Desktop.ini
 *.swp
 *.swo
 *~
+
+!.gitkeep
