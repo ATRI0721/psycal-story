@@ -27,7 +27,6 @@ system_prompt = '''
 [xxx](action:scenario-2)
 [xxx](action:scenario-3)
 </assistant>
-语言风格要贴近中学生。
 '''
 
 # 用户烦恼提示词
