@@ -64,9 +64,9 @@ html {
 /* 公式：100vw / 37.5 = 在375px宽度时得到10px */
 @media (max-width: 768px) {
     html {
-        font-size: calc(100vw / 37.5);
+        font-size: 4vw;
         /* 设置最小和最大字体大小防止极端情况 */
-        font-size: clamp(8px, calc(100vw / 37.5), 20px);
+        /* font-size: clamp(8px, calc(100vw / 37.5), 20px); */
     }
 }
 
