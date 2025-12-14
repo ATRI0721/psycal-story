@@ -273,7 +273,8 @@ def create_story_message(**data) -> StoryMessage:
     )
     
     story_message.conversation = Conversation(
-        story_message_id=story_message.id
+        story_message_id=story_message.id,
+        title="故事情感助手"
     )
     
     return story_message

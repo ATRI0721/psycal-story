@@ -129,7 +129,7 @@ export const MarkdownRender = ({
             return (
               <button
                 className={
-                  "btn text-black border-[#e5e5e5] w-full my-1 " + style
+                  "btn text-black border-[#e5e5e5] w-full h-fit my-1 p-2 " + style
                 }
                 disabled={disabled || checkDisabled(actionId)}
                 onClick={() => {

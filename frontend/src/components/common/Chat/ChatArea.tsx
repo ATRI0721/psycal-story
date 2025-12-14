@@ -15,6 +15,7 @@ export const ChatArea = ({
   loading,
   input,
   setInput,
+  img,
 }: {
   title: string;
   onSubmit: (text: string) => Promise<void>;
@@ -22,6 +23,7 @@ export const ChatArea = ({
   loading: boolean;
   input: string;
   setInput: (s: string) => void;
+  img: string;
 }) => {
   const messageListRef = useRef<HTMLDivElement>(null);
 
@@ -42,6 +44,7 @@ export const ChatArea = ({
           <div className="text-xl font-bold whitespace-nowrap text-ellipsis overflow-hidden h-10 flex-1 pt-2 rounded-xl max-w-3xl">
             {title}
           </div>
+          <img src={img} className="w-7 h-7 m-2"></img>
           <div className="absolute top-full w-full h-8 z-10 pointer-events-none bg-gradient-to-b from-base-100/80 to-transparent"></div>
         </div>
       </div>
@@ -103,6 +106,7 @@ export const ConvsationArea = () => {
       setInput={(s) =>
         (uiActions.getConversationUIState(currentStoryMessage.id).input = s)
       }
+      img="/helper.png"
     />
   ) : (
     <LogicErrorBoundary errorMessage="ConversationArea" />
@@ -132,6 +136,7 @@ export const StoryArea = () => {
       loading={state.loading}
       input={state.input}
       setInput={(s) => (uiActions.getStoryUIState(id).input = s)}
+      img="/story.png"
     />
   ) : (
     <LogicErrorBoundary errorMessage="StoryArea" />
