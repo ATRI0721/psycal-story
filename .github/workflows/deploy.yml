@@ -22,7 +22,7 @@ jobs:
         script: |
           cd ~/psycal-story
 
-          git pull origin main
+          git fetch && git reset --hard origin/main
 
           docker-compose down
 
