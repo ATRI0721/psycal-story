@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { SendCodeButton } from "./SendCodeButton";
-import { useAuthStore } from "../../store/authStore";
-import { LoginCodeRequest, LoginPasswordRequest} from "../../types";
+import { useAuthStore } from "../../../stores/authStore";
+import { LoginCodeRequest, LoginPasswordRequest} from "../../../types";
 
 type LoginType = "code" | "password";
 

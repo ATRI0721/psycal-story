@@ -6,13 +6,15 @@ interface UIState {
   error: { [key: string]: string | null };
   storyUIState: Record<string, { input: string; loading: boolean; showConversation: boolean; }>;
   conversationUIState: Record<string, { input: string; loading: boolean }>;
+  showSidebar: boolean;
 }
 
 export const uiState = proxy<UIState>({
   loading: false,
   error: {},
   storyUIState : {},
-  conversationUIState: {}
+  conversationUIState: {},
+  showSidebar: false
 });
 
 export const uiActions = {

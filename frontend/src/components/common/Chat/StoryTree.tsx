@@ -1,7 +1,7 @@
 import ReactEcharts from "echarts-for-react";
 import { useSnapshot } from "valtio";
-import { storyActions, storyGetters, storyState } from "../../store/storyStore";
-import { MessageStage, StoryMessage } from "../../types";
+import { storyActions, storyGetters, storyState } from "../../../stores/storyStore";
+import { MessageStage, StoryMessage } from "../../../types";
 
 interface Node {
   msg: StoryMessage;

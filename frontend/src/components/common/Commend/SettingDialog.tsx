@@ -1,8 +1,8 @@
 import { JSX, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { getTheme, setTheme } from "../../utils";
-import { useAuthStore } from "../../store/authStore";
-import { storyService } from "../../services/storyService";
+import { getTheme, setTheme } from "../../../utils";
+import { useAuthStore } from "../../../stores/authStore";
+import { storyService } from "../../../services/storyService";
 
 function SettingItem({ children, text, bt=true }: { children: JSX.Element, text: string, bt?: boolean }){
     return (

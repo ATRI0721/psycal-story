@@ -1,9 +1,9 @@
 // src/services/storyService.ts
 import chatAPI from "../api/chat";
-import { storyActions, storyGetters, storyState } from "../store/storyStore";
+import { storyActions, storyGetters, storyState } from "../stores/storyStore";
 import type { Message, StoryMessage, StreamResponse } from "../types";
-import { uiActions, uiState } from "../store/uiStore";
-import { handleError } from "../store/middleware";
+import { uiActions, uiState } from "../stores/uiStore";
+import { handleError } from "../stores/middleware";
 
 
 // 生成一个简单的临时ID

@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
-import { storyService } from "../../services/storyService";
 import { useSnapshot } from "valtio";
-import { uiState } from "../../store/uiStore";
+import { storyService } from "../../../services/storyService";
+import { uiState } from "../../../stores/uiStore";
 
 export const NewStoryButton = () => {
   const createStoryMutation = useMutation({

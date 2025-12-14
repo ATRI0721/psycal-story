@@ -1,4 +1,4 @@
-import { useAuthStore } from "../store/authStore";
+import { useAuthStore } from "../../stores/authStore";
 import functionalDialog from "./Commend/SettingDialog";
 import { Dropdown } from "./Dropdown";
 

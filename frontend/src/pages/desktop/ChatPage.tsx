@@ -2,18 +2,19 @@ import { useEffect } from "react";
 import {
   ConvsationArea,
   StoryArea,
-} from "../components/Chat/ChatArea";
-import { Sidebar } from "../components/Chat/Sidebar";
-import { storyState } from "../store/storyStore";
+} from "../../components/common/Chat/ChatArea";
+import { storyState } from "../../stores/storyStore";
 import { useSnapshot } from "valtio";
-import { storyService } from "../services/storyService";
-import { NewStoryButton } from "../components/Chat/NewStoryButton";
-import { uiState } from "../store/uiStore";
+import { storyService } from "../../services/storyService";
+import { NewStoryButton } from "../../components/common/Chat/NewStoryButton"
+import { uiState } from "../../stores/uiStore";
+import Sidebar from "../../components/common/Chat/Sidebar";
+import FoldedSidebar from "../../components/desktop/FoldedSidebar";
 
 export const ChatPage = () => {
   // ---- snap 整个 storyState（推荐） ----
   const { currentStoryMessage } = useSnapshot(storyState);
-  const { storyUIState } = useSnapshot(uiState);
+  const { storyUIState, showSidebar } = useSnapshot(uiState);
   const storyId = currentStoryMessage?.story_id??"";
   const showConversation = storyUIState[storyId]?.showConversation??false;
   useEffect(() => {
@@ -22,7 +23,7 @@ export const ChatPage = () => {
 
   return (
     <div className="h-screen flex">
-      <Sidebar />
+      {showSidebar?<div className="w-64"><Sidebar /></div>:<FoldedSidebar />}
       <div className="flex-1 flex">
         {currentStoryMessage ? (
           currentStoryMessage.stage === "initial" ? (

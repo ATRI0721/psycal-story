@@ -18,25 +18,6 @@ export const MessageList = ({ messages, loading}: {messages: readonly { role:str
               </div> */}
               <div className="w-full">
                 {loading && message.content === "" ? <div>正在生成中...</div> :<MarkdownRender content={message.content} disabled={index!==messages.length-1}/>}
-                {/* {(loading && index === messages.length - 1) ? null : (
-                  <Icons
-                    onCopy={() =>
-                      {
-                        navigator.clipboard.writeText(message.content);
-                        functionalToast("复制成功", "SUCCESS");
-                      }
-                    }
-                    onRegenerate={() => {
-                      functionalToast("功能尚未完成", "MESSAGE");
-                    }}
-                    onLike={() => {
-                      functionalToast("点赞成功", "SUCCESS");
-                    }}
-                    onDislike={() => {
-                      functionalToast("谢谢反馈", "MESSAGE");
-                    }}
-                  />
-                )} */}
               </div>
             </div>
           )}

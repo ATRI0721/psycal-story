@@ -1,6 +1,6 @@
 import { StateCreator } from 'zustand';
 import { uiActions } from './uiStore';
-import functionalToast from "../components/Commend/Toast";
+import functionalToast from "../components/common/Commend/Toast";
 
 
 export function getError(error: unknown): Error {

@@ -2,10 +2,10 @@ import { useEffect, useRef } from "react";
 import { ChatInput } from "./ChatInput";
 import { MessageList } from "./MessageList";
 import { useSnapshot } from "valtio";
-import { storyGetters, storyState } from "../../store/storyStore";
+import { storyGetters, storyState } from "../../../stores/storyStore";
 import { LogicErrorBoundary } from "../LogicErrorBoundary";
-import { storyService } from "../../services/storyService";
-import { uiActions, uiState } from "../../store/uiStore";
+import { storyService } from "../../../services/storyService";
+import { uiActions, uiState } from "../../../stores/uiStore";
 import functionalToast from "../Commend/Toast";
 
 export const ChatArea = ({
@@ -51,7 +51,7 @@ export const ChatArea = ({
           ref={messageListRef}
         >
           <div className="flex flex-col h-full relative">
-            <div className="max-w-3xl mx-auto w-full">
+            <div className="max-w-3xl mx-auto w-full pb-6">
               <MessageList messages={messages} loading={loading} />
             </div>
             <div className="sticky bottom-0 mt-auto w-full flex items-center z-10 flex-col bg-base-100">
@@ -81,15 +81,28 @@ export const ConvsationArea = () => {
   const { conversationUIState } = useSnapshot(uiState);
   const conversation = currentStoryMessage?.conversation;
   const sendMessageToConversation = storyService.sendMessageToConversation;
-  const state = conversationUIState[currentStoryMessage?.id ?? ''] || { loading: false, input: "" };
+  const state = conversationUIState[currentStoryMessage?.id ?? ""] || {
+    loading: false,
+    input: "",
+  };
   return conversation ? (
     <ChatArea
       title={conversation.title}
-      onSubmit={(s) => sendMessageToConversation(s, currentStoryMessage.story_id, currentStoryMessage.id)}
-      messages={conversation.messages.filter((s)=>s.content.length || s.role==="assistant")}
+      onSubmit={(s) =>
+        sendMessageToConversation(
+          s,
+          currentStoryMessage.story_id,
+          currentStoryMessage.id
+        )
+      }
+      messages={conversation.messages.filter(
+        (s) => s.content.length || s.role === "assistant"
+      )}
       loading={state.loading}
       input={state.input}
-      setInput={(s) => uiActions.getConversationUIState(currentStoryMessage.id).input=s}
+      setInput={(s) =>
+        (uiActions.getConversationUIState(currentStoryMessage.id).input = s)
+      }
     />
   ) : (
     <LogicErrorBoundary errorMessage="ConversationArea" />
@@ -102,9 +115,7 @@ export const StoryArea = () => {
   const storyBranchMessages = useSnapshot(storyGetters).storyBranchMessages;
   const sendMessageToBranch = storyService.sendMessageToBranch;
   const id = currentStoryMessage?.story_id ?? "";
-  const currentStory = storyList.find(
-    (s) => id == s.id
-  );
+  const currentStory = storyList.find((s) => id == s.id);
   const state = storyUIState[id] || { loading: false, input: "" };
   const handleSubmit = async (s: string) => {
     if (currentStoryMessage?.stage === "completed") {
@@ -113,14 +124,17 @@ export const StoryArea = () => {
     }
     return sendMessageToBranch(s);
   };
-  return (
-    currentStoryMessage && currentStory ? <ChatArea
+  return currentStoryMessage && currentStory ? (
+    <ChatArea
       title={currentStory.title}
       onSubmit={handleSubmit}
       messages={storyBranchMessages.slice(1)}
       loading={state.loading}
       input={state.input}
-      setInput={(s) => uiActions.getStoryUIState(id).input=s}
-    /> : <LogicErrorBoundary errorMessage="StoryArea"/>
+      setInput={(s) => (uiActions.getStoryUIState(id).input = s)}
+    />
+  ) : (
+    <LogicErrorBoundary errorMessage="StoryArea" />
   );
 };
+

@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useAuthStore } from "../store/authStore";
-import { RegisterForm } from "../components/Auth/RegisterForm";
-import { LoginForm } from "../components/Auth/LoginForm";
+import { useAuthStore } from "../../stores/authStore";
+import { RegisterForm } from "../../components/common/Auth/RegisterForm";
+import { LoginForm } from "../../components/common/Auth/LoginForm";
 import { Navigate } from "react-router-dom";
 
 
@@ -25,7 +25,10 @@ export const AuthPage = () => {
         )}
 
         {isLoading && (
-          <div className="mt-4 text-center text-gray-500">加载中...</div>
+          <div
+            className="animate-spin inline-block w-6 h-6 border-[3px] border-current border-t-transparent text-blue-600 rounded-full"
+            role="status"
+          ></div>
         )}
       </div>
     </div>

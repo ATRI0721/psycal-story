@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import { useAuthStore } from "../../store/authStore";
+import { useAuthStore } from "../stores/authStore";
 
-export default function ProtectedRoute() {
+export default function AuthGuardRoute() {
   const user = useAuthStore(s => s.user);
   const verifyToken = useAuthStore(s => s.verifyToken);
   const [isVerifying, setIsVerifying] = useState(true);

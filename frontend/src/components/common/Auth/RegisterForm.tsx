@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { SendCodeButton } from "./SendCodeButton";
-import { useAuthStore } from "../../store/authStore";
+import { useAuthStore } from "../../../stores/authStore";
 
 
 export const RegisterForm = ({ onSwitch }: { onSwitch: () => void }) => {

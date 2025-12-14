@@ -3,9 +3,9 @@ import { vscDarkPlus } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import React, { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { storyActions, storyGetters, storyState } from "../../store/storyStore";
-import { uiActions } from "../../store/uiStore";
-import { storyService } from "../../services/storyService";
+import { storyActions, storyGetters, storyState } from "../../../stores/storyStore";
+import { uiActions } from "../../../stores/uiStore";
+import { storyService } from "../../../services/storyService";
 
 const CodeBlock = ({
   className,
