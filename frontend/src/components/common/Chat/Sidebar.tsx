@@ -25,7 +25,7 @@ const Sidebar = () => {
     <div className="bg-[#F9FBFF] flex flex-col p-3 dark:bg-base-200 h-full w-full min-w-64">
       {/* Logo 区域 */}
       <div className="mt-4 mb-2 ml-3 flex justify-between">
-        <div className="text-2xl font-bold w-fit">Psycal Story</div>
+        <div className="text-2xl font-bold w-fit">Psystory</div>
         <div
           className="cursor-pointer w-fit flex items-center tooltip tooltip-bottom hover-bg p-2"
           data-tip="收起侧边栏"
