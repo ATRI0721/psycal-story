@@ -61,7 +61,7 @@ class HelperModel(BaseModel):
         ]
         stream = await chat.chat.completions.create(
                 model=settings.CHAT_MODEL,
-                messages = [{"role": "system", "content": prompts["system"].format(
+                messages = [{"role": "system", "content": self.prompts["system"].format(
                      situation=story.situation, problem_type=story.problem_type,
                      history_story=self.get_main_story(story, story_message),
                      history_choice= get_choice(story,story_message),

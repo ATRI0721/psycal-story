@@ -1,13 +1,10 @@
-from app.models.dto import StoryDTO, StoryMessageDTO
+from functools import singledispatchmethod
+from app.models.dto import MessageDTO, StoryDTO, StoryMessageDTO
 from openai import AsyncOpenAI, AsyncStream
-
-from app.models.database import Conversation, Message, Story, StoryMessage
 from openai.types.chat import ChatCompletionSystemMessageParam, ChatCompletionUserMessageParam, ChatCompletionAssistantMessageParam
 
-
-
 class BaseModel:
-    def __init__(self, prompts:dict, chatmodel:AsyncOpenAI) -> None:
+    def __init__(self, prompts:dict[str, str], chatmodel:AsyncOpenAI) -> None:
         self.prompts = prompts
         self.chat = chatmodel
 
@@ -34,10 +31,15 @@ class BaseModel:
             })
             s = m.get(s.parent_id)
         return self._to_openai_message(r)
+    
+    @singledispatchmethod
+    def _to_openai_message(self, messages):
+        raise NotImplementedError("Unsupported message type")
 
-    def _to_openai_message(self, message: list[dict[str,str]]):
+    @_to_openai_message.register
+    def _(self, messages: list[dict[str,str]]):
         openai_messages = []
-        for msg in message:
+        for msg in messages:
             role = msg.get("role")
             content = msg.get("content", "")
             if role == "user":
@@ -47,6 +49,14 @@ class BaseModel:
             elif role == "system":
                 openai_messages.append(ChatCompletionSystemMessageParam(role="system", content=content))
         return openai_messages
+    
+    @_to_openai_message.register
+    def _(self, messages: list[StoryMessageDTO]):
+        return self._to_openai_message([{"role": message.role, "content": message.content} for message in messages])
+    
+    @_to_openai_message.register
+    def _(self, messages: list[MessageDTO]):
+        return self._to_openai_message([{"role": message.role, "content": message.content} for message in messages])
 
     async def generate_response(self):
         raise NotImplementedError("Subclasses must implement this method.")

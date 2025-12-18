@@ -149,6 +149,7 @@ export interface StreamMessageResponse {
   value: string;
   done: boolean;
   stage?: "inProgress" | "completed";
+  conversation_title?: string;
 }
 
 export type StreamResponse = StreamInitResponse | StreamMessageResponse;

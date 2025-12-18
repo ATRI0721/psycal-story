@@ -134,7 +134,7 @@ export const storyService = {
       parent_id: user_message_id, // AI消息是用户消息的子节点
       content: "",
       role: "assistant",
-      conversation: { messages: [], title: "" },
+      conversation: { messages: [], title: "故事情感助手" },
       stage: "inProgress",
       children_id: [],
     };
@@ -176,7 +176,8 @@ export const storyService = {
             ai_message_id,
             (msg) => {
               msg.content = msg.content + data.value;
-              msg.stage = data.done ? (data.stage || "inProgress") : msg.stage;
+              msg.stage = data.stage ?? msg.stage;
+              msg.conversation.title = data.conversation_title ?? msg.conversation.title; 
             }
           );
         }

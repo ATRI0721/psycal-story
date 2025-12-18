@@ -56,14 +56,14 @@ def get_story(session: SessionDep, current_user: CurrentUser, story_id: str) -> 
 
 GetStory = Annotated[Story, Depends(get_story)]
 
-def get_story_message(session: SessionDep, current_user: CurrentUser, story: GetStory, story_message_id: str) -> StoryMessage:
-    message = session.get(StoryMessage, story_message_id)
+def get_story_message(session: SessionDep, story: GetStory, message_id: str) -> StoryMessage:
+    message = session.get(StoryMessage, message_id)
     if message is None:
         raise HTTPException(status_code=404, detail="Message not found")
     if message.story != story:
         raise HTTPException(status_code=403, detail="Forbidden")
     return message
 
-GetMessage = Annotated[Message, Depends(get_story_message)]
+GetMessage = Annotated[StoryMessage, Depends(get_story_message)]
 
 

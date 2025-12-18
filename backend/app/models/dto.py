@@ -17,11 +17,29 @@ class MessageDTO(SQLModel):
     role: str
     content: str
 
+    @classmethod
+    def from_orm(cls, m: Message) -> "MessageDTO":
+        return cls(
+            id=m.id,
+            created_at=m.created_at,
+            role=m.role,
+            content=m.content,
+        )
+
+
 
 class ConversationDTO(SQLModel):
     id: str
     title: str
     messages: List[MessageDTO] = []
+
+    @classmethod
+    def from_orm(cls, c: Conversation) -> "ConversationDTO":
+        return cls(
+            id=c.id,
+            title=c.title,
+            messages=[MessageDTO.from_orm(m) for m in c.messages]
+        )
 
 
 class StoryMessageDTO(SQLModel):
@@ -34,7 +52,27 @@ class StoryMessageDTO(SQLModel):
     parent_id: Optional[str]
 
     children: List["StoryMessageDTO"] = []
-    conversation: ConversationDTO
+    conversation: ConversationDTO 
+
+    @classmethod
+    def from_orm(cls, sm: StoryMessage) -> "StoryMessageDTO":
+        dto = cls(
+            id=sm.id,
+            created_at=sm.created_at,
+            stage=sm.stage,
+            role=sm.role,
+            content=sm.content,
+            order=sm.order,
+            parent_id=sm.parent_id,
+            conversation=ConversationDTO.from_orm(sm.conversation),
+        )
+
+        dto.children = [
+            StoryMessageDTO.from_orm(child)
+            for child in sm.children
+        ]
+
+        return dto
 
 
 class StoryDTO(SQLModel):
@@ -49,6 +87,24 @@ class StoryDTO(SQLModel):
 
     story_messages: List[StoryMessageDTO] = []
 
+    @classmethod
+    def from_orm(cls, story: Story) -> "StoryDTO":
+        return cls(
+            id=story.id,
+            created_at=story.created_at,
+            updated_at=story.updated_at,
+
+            title=story.title,
+            problem_type=story.problem_type,
+            situation=story.situation,
+            related_post=story.related_post,
+
+            story_messages=[
+                StoryMessageDTO.from_orm(sm)
+                for sm in story.story_messages
+            ]
+        )
+
 
 class UserDTO(SQLModel):
     id: str
@@ -59,78 +115,13 @@ class UserDTO(SQLModel):
 
     storys: List[StoryDTO] = []
 
-
-# ===========================================
-# ORM → DTO 转换函数（不会触发 lazy load）
-# ===========================================
-
-def orm_to_message_dto(m: Message) -> MessageDTO:
-    return MessageDTO(
-        id=m.id,
-        created_at=m.created_at,
-        role=m.role,
-        content=m.content,
-    )
-
-
-def orm_to_conversation_dto(c: Conversation) -> ConversationDTO:
-    return ConversationDTO(
-        id=c.id,
-        title=c.title,
-        messages=[orm_to_message_dto(m) for m in c.messages]
-    )
-
-
-def orm_to_story_message_dto(sm: StoryMessage) -> StoryMessageDTO:
-
-    dto = StoryMessageDTO(
-        id=sm.id,
-        created_at=sm.created_at,
-        stage=sm.stage,
-        role=sm.role,
-        content=sm.content,
-        order=sm.order,
-        parent_id=sm.parent_id,
-        conversation=orm_to_conversation_dto(sm.conversation),
-    )
-
-    # 子节点（如果你用 selectinload，会自动预加载）
-    dto.children = [
-        orm_to_story_message_dto(child)
-        for child in sm.children
-    ]
-
-    # 对话（有可能为空）
-    if sm.conversation:
-        dto.conversation = orm_to_conversation_dto(sm.conversation)
-
-    return dto
-
-
-def orm_to_story_dto(story: Story) -> StoryDTO:
-    return StoryDTO(
-        id=story.id,
-        created_at=story.created_at,
-        updated_at=story.updated_at,
-
-        title=story.title,
-        problem_type=story.problem_type,
-        situation=story.situation,
-        related_post=story.related_post,
-
-        story_messages=[
-            orm_to_story_message_dto(sm)
-            for sm in story.story_messages
-        ]
-    )
-
-
-def orm_to_user_dto(u: User) -> UserDTO:
-    return UserDTO(
-        id=u.id,
-        email=u.email,
-        is_active=u.is_active,
-        created_at=u.created_at,
-        last_login=u.last_login,
-        storys=[orm_to_story_dto(s) for s in u.storys]
-    )
+    @classmethod
+    def from_orm(cls, u: User) -> "UserDTO":
+        return cls(
+            id=u.id,
+            email=u.email,
+            is_active=u.is_active,
+            created_at=u.created_at,
+            last_login=u.last_login,
+            storys=[StoryDTO.from_orm(s) for s in u.storys]
+        )

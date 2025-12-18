@@ -13,8 +13,9 @@ from app.ai.initmessages import ask_problems
 from app.ai.story import storymodel
 from app.ai.helper import helpermodel
 from app.ai.topic import topicmodel
+from app.ai.title import titlemodel
 from app.utils import generate_uuid, get_time
-from app.models.dto import StoryDTO, MessageDTO, ConversationDTO, UserDTO, orm_to_story_dto, orm_to_message_dto, orm_to_conversation_dto, orm_to_story_message_dto, orm_to_user_dto
+from app.models.dto import StoryDTO, MessageDTO, ConversationDTO, StoryMessageDTO, UserDTO
 
 router = APIRouter(tags=["chat"], prefix="/chat")
 
@@ -52,41 +53,51 @@ def delete_storys(user: CurrentUser, session: SessionDep):
     curd.delete_storys(user, session)
     return {"detail": "All stories deleted"}
 
+@router.post("/completions/title/{story_id}")
+async def get_title_completions(
+    story: GetStory,
+):
+    story_dto = StoryDTO.from_orm(story)
+    async def respond() -> AsyncGenerator[str, None]:
+        try:
+            buffer = StringIO()
+            async for content in titlemodel.generate_response(story_dto):
+                yield format_event({
+                    "type": "message",
+                    "value": content,
+                    "done": False,
+                })
+                buffer.write(content)
+            final_content = buffer.getvalue()
+            buffer.close() 
+            yield format_event({
+                "type": "message",
+                "value": "",
+                "done": True,
+            })
+            with create_db_session() as final_session:
+                story_to_update: Story = final_session.get(Story, story_dto.id)
+                story_to_update.title = final_content
+                story_to_update.updated_at = get_time()
+                final_session.commit()
+        except Exception as e:
+            yield format_event({
+                "type": "error",
+                "value": f"生成响应时出错: {e}",
+                "done" : True,
+            })
 
-# @router.get("/completions/{story_id}/regenerate/{message_id}")
-# async def regenerate_completions(story: GetStory, message: GetMessage, session: SessionDep):
-#     curd.delete_messages(story, message, session)
-#     ai_message = Message(content="", role="assistant")
+    return StreamingResponse(respond(), media_type="text/event-stream")
+    
 
-#     async def respond():
-#         yield format_event({
-#             "type": "init",
-#             "ai_message_id": ai_message.id,
-#             "done": False,
-#         })
-
-#         async for content in scheduler.process_message(story, ai_message):
-#             yield format_message(content, ai_message.id)
-
-#         yield format_event({
-#             "type": "message",
-#             "value": "",
-#             "done": True,
-#             "id": ai_message.id
-#         })
-
-#     return StreamingResponse(respond(), media_type="text/event-stream")
 
 @router.post("/completions/story/{story_id}/{message_id}")
 async def get_story_completions(
+    session: SessionDep,   
     story: GetStory, 
-    session: SessionDep,          
+    last_message: GetMessage,       
     message_content: str = Body(..., embed=True),
-    message_id: str = Path(...)
 ):
-    last_message = session.get(StoryMessage, message_id)
-    if not last_message or last_message.story_id != story.id:
-        raise HTTPException(status_code=404, detail="Message not found")
     if last_message.role == "user" or last_message.stage == "completed":
         raise HTTPException(status_code=400, detail="Cannot reply to this message")
 
@@ -96,19 +107,16 @@ async def get_story_completions(
     user_message = create_story_message(content=message_content, role="user", story_id=story.id, parent=last_message)
     ai_message = create_story_message(content="", role="assistant", story_id=story.id, parent=user_message)
     
-    # 立即添加并刷新以获取ID
     session.add(user_message)
     session.add(ai_message)
-    session.flush()  # 获取消息ID
     session.commit()
-    last_message_dto = orm_to_story_message_dto(last_message)
-    user_message_dto = orm_to_story_message_dto(user_message)
-    ai_message_dto = orm_to_story_message_dto(ai_message)
-    story_dto = orm_to_story_dto(story)
+    last_message_dto = StoryMessageDTO.from_orm(last_message)
+    user_message_dto = StoryMessageDTO.from_orm(user_message)
+    ai_message_dto = StoryMessageDTO.from_orm(ai_message)
+    story_dto = StoryDTO.from_orm(story)
     session.close()
 
     async def respond() -> AsyncGenerator[str, None]:
-        
         try:
             buffer = StringIO()
             async for content in generate_response(storymodel, story_dto, last_message_dto, user_message_dto, ai_message_dto, buffer):
@@ -116,11 +124,9 @@ async def get_story_completions(
             final_content= buffer.getvalue()
             buffer.close()
 
-
-            with create_db_session() as final_session:  # 注意：这里用的是新的session
-                # 从数据库重新加载对象，确保状态最新
-                ai_message_to_update: StoryMessage = final_session.get(StoryMessage, ai_message.id)
-                story_to_update: Story = final_session.get(Story, story.id)
+            with create_db_session() as final_session:
+                ai_message_to_update: StoryMessage = final_session.get(StoryMessage, ai_message_dto.id)
+                story_to_update: Story = final_session.get(Story, story_dto.id)
 
                 ai_message_to_update.content = final_content
                 if "真实结局" in final_content or "互动结局" in final_content:
@@ -128,15 +134,15 @@ async def get_story_completions(
                 
                 story_to_update.updated_at = get_time()
                 
-                # 使用新session提交最终结果
                 final_session.commit()
 
                 yield format_event({
-                "type": "message",
-                "value": "",
-                "done": True,
-                "id": ai_message_to_update.id, 
-                "stage": ai_message_to_update.stage
+                    "type": "message",
+                    "value": "",
+                    "done": True,
+                    "id": ai_message_to_update.id, 
+                    "stage": ai_message_to_update.stage,
+                    "conversation_title": ai_message_to_update.conversation.title,
                 })
             
         except Exception as e:
@@ -151,27 +157,22 @@ async def get_story_completions(
 
 @router.post("/completions/conversation/{story_id}/{message_id}")
 async def get_conversation_completions(
+    session: SessionDep,  
     story: GetStory, 
-    session: SessionDep,          
+    last_message: GetMessage,       
     message_content: str = Body(..., embed=True),
-    message_id: str = Path(...)
 ):
-    last_message = session.get(StoryMessage, message_id)
-    if not last_message or last_message.story_id != story.id:
-        raise HTTPException(status_code=404, detail="Message not found")
-    
     user_message = Message(content=message_content, role="user", conversation_id=last_message.conversation.id)
     ai_message = Message(content="", role="assistant", conversation_id=last_message.conversation.id)
     
     # 立即添加并刷新以获取ID
     session.add(user_message)
     session.add(ai_message)
-    session.flush()  # 获取消息ID
     session.commit()
-    last_message_dto = orm_to_story_message_dto(last_message)
-    user_message_dto = orm_to_message_dto(user_message)
-    ai_message_dto = orm_to_message_dto(ai_message)
-    story_dto = orm_to_story_dto(story)
+    last_message_dto = StoryMessageDTO.from_orm(last_message)
+    user_message_dto = MessageDTO.from_orm(user_message)
+    ai_message_dto = MessageDTO.from_orm(ai_message)
+    story_dto = StoryDTO.from_orm(story)
     session.close()
 
     async def respond() -> AsyncGenerator[str, None]:
