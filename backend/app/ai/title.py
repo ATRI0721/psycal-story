@@ -28,8 +28,8 @@ class TitleModel(BaseModel):
         super().__init__(prompts, chat)
     
     async def generate_response(self, story: StoryDTO):
-        h1 = self._to_openai_message(story.story_messages[0].conversation.messages)
-        h2 = self._to_openai_message(story.story_messages[1:])
+        h1 = self.to_openai_message(story.story_messages[0].conversation.messages)
+        h2 = self.to_openai_message(story.story_messages[1:])
         stream = await self.chat.chat.completions.create(
             model=settings.CHAT_MODEL,
             messages = [{"role": "system", "content": self.prompts["system"].format(history=h1+h2)}],
