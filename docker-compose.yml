@@ -5,7 +5,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ../data:/app/data
+      - ../data:/data
       - ${EMBEDDER_MODEL}:/app/models/embedder
       - ${RERANK_MODEL}:/app/models/reranker
     environment:
