@@ -3,11 +3,14 @@ import { useAuthStore } from "../../stores/authStore";
 import { RegisterForm } from "../../components/common/Auth/RegisterForm";
 import { LoginForm } from "../../components/common/Auth/LoginForm";
 import { Navigate } from "react-router-dom";
+import { useSnapshot } from "valtio";
+import { uiState } from "../../stores/uiStore";
 
 
 export const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
-  const { isLoading, user } = useAuthStore();
+  const { user } = useAuthStore();
+  const { loading } = useSnapshot(uiState);
 
   if (user) return <Navigate to="/" />;
 
@@ -24,7 +27,7 @@ export const AuthPage = () => {
           <RegisterForm onSwitch={() => setIsLogin(true)} />
         )}
 
-        {isLoading && (
+        {loading && (
           <div
             className="animate-spin inline-block w-6 h-6 border-[3px] border-current border-t-transparent text-blue-600 rounded-full"
             role="status"

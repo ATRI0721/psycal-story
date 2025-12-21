@@ -1,5 +1,5 @@
-// const BaseURL = import.meta.env.BACKEND_API_URL as string || "/api/v1";
-const BaseURL = "http://localhost:8000/api/v1";
+const BaseURL = import.meta.env.BACKEND_API_URL as string || "/api/v1";
+// const BaseURL = "http://localhost:8000/api/v1";
 // const BaseURL = "https://d9jd5tcg-8000.asse.devtunnels.ms/api/v1";
 
 const api = {
