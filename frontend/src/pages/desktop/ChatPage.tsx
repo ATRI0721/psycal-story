@@ -10,13 +10,14 @@ import { NewStoryButton } from "../../components/common/Chat/NewStoryButton"
 import { uiState } from "../../stores/uiStore";
 import Sidebar from "../../components/common/Chat/Sidebar";
 import FoldedSidebar from "../../components/desktop/FoldedSidebar";
+import { UIMode } from "../../types";
 
 export const ChatPage = () => {
   // ---- snap 整个 storyState（推荐） ----
   const { currentStoryMessage } = useSnapshot(storyState);
-  const { storyUIState, showSidebar } = useSnapshot(uiState);
+  const { storyUIState, showSidebar, uiMode } = useSnapshot(uiState);
   const storyId = currentStoryMessage?.story_id??"";
-  const showConversation = storyUIState[storyId]?.showConversation??false;
+  const showConversation = (storyUIState[storyId]?.showConversation??false) && uiMode===UIMode.EXPERIMENT;
   useEffect(() => {
     storyService.fetchStories();
   }, []);

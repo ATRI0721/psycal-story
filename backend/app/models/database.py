@@ -1,17 +1,25 @@
 from datetime import datetime
+from enum import Enum
 from typing import List, Optional
 from sqlmodel import SQLModel, Field, Relationship
 
 from app.utils import generate_uuid, get_time
 
+class UserGroup(str, Enum):
+    CONTROL = "control"      # 对照组
+    EXPERIMENT = "experiment" # 实验组
+    ADMIN = "admin"           # 管理员
+
 
 class User(SQLModel, table=True):
     id: str = Field(default_factory=generate_uuid, primary_key=True)
     email: str = Field(max_length=100, index=True, unique=True)
-    hashed_password: str
-    is_active: bool = Field(default=True)
+    hashed_password: str   
     created_at: datetime = Field(default_factory=get_time)
+    
+    is_active: bool = Field(default=True)
     last_login: Optional[datetime] = None
+    group: UserGroup = Field(default=UserGroup.CONTROL)
 
     storys: List["Story"] = Relationship(
         back_populates="user",

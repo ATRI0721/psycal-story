@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     FRONTEND_URL: str = "http://localhost:5173"
 
+    DATABASE_URL: str = "sqlite:///data/app.db"
 
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 3 * 24 * 60  # 3 days
@@ -20,8 +21,6 @@ class Settings(BaseSettings):
     CHAT_MODEL: str = Field(..., description="Chat model path")
     CHAT_MODEL_URL: str = Field(..., description="Chat model url")
     MODEL_API_KEY: str = Field(..., description="Model API key")
-
-    DATABASE_URL: str = Field(..., description="DATABASE_URL")
 
     # ------------------ 配置 ------------------
     model_config = SettingsConfigDict(

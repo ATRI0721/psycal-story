@@ -1,5 +1,7 @@
 // src/store/uiStore.ts
 import { proxy } from "valtio";
+import { UIMode } from "../types";
+
 
 interface UIState {
   loading: boolean;
@@ -7,6 +9,7 @@ interface UIState {
   storyUIState: Record<string, { input: string; loading: boolean; showConversation: boolean; }>;
   conversationUIState: Record<string, { input: string; loading: boolean }>;
   showSidebar: boolean;
+  uiMode: UIMode;
 }
 
 export const uiState = proxy<UIState>({
@@ -14,7 +17,8 @@ export const uiState = proxy<UIState>({
   error: {},
   storyUIState : {},
   conversationUIState: {},
-  showSidebar: false
+  showSidebar: false,
+  uiMode: UIMode.CONTROL,
 });
 
 export const uiActions = {

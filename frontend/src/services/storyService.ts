@@ -1,7 +1,7 @@
 // src/services/storyService.ts
 import chatAPI from "../api/chat";
 import { storyActions, storyGetters, storyState } from "../stores/storyStore";
-import type { Message, StoryMessage, StreamResponse } from "../types";
+import { UIMode, type Message, type StoryMessage, type StreamResponse } from "../types";
 import { uiActions, uiState } from "../stores/uiStore";
 import { handleError } from "../stores/middleware";
 
@@ -144,9 +144,11 @@ export const storyService = {
 
     uiActions.getStoryUIState(story_id).loading = true;
 
+    const streamApi = uiState.uiMode === UIMode.CONTROL ? chatAPI.sendControlMessage:chatAPI.sendStoryMessage;
+
     // 3. 调用API并发起流式请求
     try {
-      const stream = await chatAPI.sendStoryMessage(
+      const stream = await streamApi(
         story_id,
         parentMessageId,
         content
@@ -183,7 +185,8 @@ export const storyService = {
         }
       }
       await handleStream(stream, handleChunk);
-      storyService.sendMessageToConversation("开始", story_id, ai_message_id);
+      if (uiState.uiMode === UIMode.EXPERIMENT)
+        storyService.sendMessageToConversation("开始", story_id, ai_message_id);
     } catch (error) {
       handleError("sendMessageToBranch", error);
       storyActions.updateStoryMessage(story_id, ai_message_id, (msg) => {

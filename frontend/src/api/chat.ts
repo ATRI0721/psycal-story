@@ -6,7 +6,8 @@ import api from "./setting";
 const chatAPI = {
   getStorys: () => api.get<StorywithoutMessages[]>("/chat/storys"),
 
-  createStory: (title: string = "新故事") => api.post<Story>("/chat/story", { title }),
+  createStory: (title: string = "新故事") =>
+    api.post<Story>("/chat/story", { title }),
 
   updateTitle: (storyId: string, title: string) =>
     api.patch<Story>(`/chat/story/${storyId}`, { title }),
@@ -24,6 +25,16 @@ const chatAPI = {
     message_content: string
   ) =>
     api.stream(`/chat/completions/story/${storyId}/${messageId}`, {
+      method: "POST",
+      body: JSON.stringify({ message_content }),
+    }),
+
+  sendControlMessage: (
+    storyId: string,
+    messageId: string,
+    message_content: string
+  ) =>
+    api.stream(`/chat/completions/control/${storyId}/${messageId}`, {
       method: "POST",
       body: JSON.stringify({ message_content }),
     }),

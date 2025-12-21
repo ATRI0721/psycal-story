@@ -23,6 +23,7 @@ class UserResetPassword(SQLModel):
 class UserLoginResponse(SQLModel):
     id: str
     email: str
+    group: str
 
 class UserResponse(SQLModel):
     access_token: str

@@ -4,11 +4,22 @@ export type MessageRole = "user" | "assistant";
 export type StreamMessageType = "init" | "message";
 export type MessageStage = "initial" | "inProgress" | "completed";
 
+export enum UserGroup {
+  EXPERIMENT = "experiment",
+  CONTROL = "control",
+  ADMIN = "admin"
+};
+
+export enum UIMode {
+  EXPERIMENT = "experiment",
+  CONTROL = "control",
+}
 
 // 通用类型定义
 export interface User {
   id: string;
   email: string;
+  group: UserGroup;
 }
 
 // 认证模块类型定义

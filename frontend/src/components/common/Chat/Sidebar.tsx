@@ -6,20 +6,24 @@ import { storyService } from "../../../services/storyService";
 import { useSnapshot } from "valtio";
 import { storyGetters, storyState } from "../../../stores/storyStore";
 import StoryTree from "./StoryTree";
-import { uiActions, uiState } from "../../../stores/uiStore";
+import { uiState } from "../../../stores/uiStore";
+import { useAuthStore } from "../../../stores/authStore";
+import { UIMode, UserGroup } from "../../../types";
+import functionalToast from "../Commend/Toast";
 
 const Sidebar = () => {
-  const { storyUIState } = useSnapshot(uiState);
+  // const { storyUIState } = useSnapshot(uiState);
   const { storyList } = useSnapshot(storyState);
   const { currentStoryId } = useSnapshot(storyGetters);
+  const user = useAuthStore((s) => s.user);
   const [isStoryList, setIsStoryList] = useState(true);
 
   const selectStory = storyService.loadStory;
   const deleteStory = storyService.deleteStory;
   const reNameStory = storyService.renameStory;
-  
-  const showConversation =
-    storyUIState[currentStoryId??""]?.showConversation ?? false;
+
+  // const showConversation =
+  //   storyUIState[currentStoryId ?? ""]?.showConversation ?? false;
 
   return (
     <div className="bg-[#F9FBFF] flex flex-col p-3 dark:bg-base-200 h-full w-full min-w-64">
@@ -63,16 +67,24 @@ const Sidebar = () => {
           <StoryTree />
         )}
       </div>
-      <button
+      {(user && user.group===UserGroup.ADMIN) && (
+        <button className="btn btn-soft btn-primary"
+        onClick={()=>{
+          uiState.uiMode=uiState.uiMode===UIMode.CONTROL?UIMode.EXPERIMENT:UIMode.CONTROL;
+          functionalToast(`当前模式${uiState.uiMode}`, "MESSAGE");
+        }}>
+          切换模式
+        </button>
+      )}
+      {/* <button
         className="btn btn-soft btn-primary"
-        disabled={true}
         onClick={() => {
-          uiActions.getStoryUIState(currentStoryId??"").showConversation =
+          uiActions.getStoryUIState(currentStoryId ?? "").showConversation =
             !showConversation;
         }}
       >
         {showConversation ? "关闭对话" : "展开对话"}
-      </button>
+      </button> */}
       <Avatar fold={false} />
     </div>
   );

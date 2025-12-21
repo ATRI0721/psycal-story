@@ -74,7 +74,7 @@ export const ChatInput = ({
             className={`ml-4 p-1 rounded-full ${
               input.trim() === ""
                 ? "cursor-not-allowed bg-sky-200"
-                : "bg-blue-600 hover:bg-blue-700"
+                : "cursor-pointer bg-blue-600 hover:bg-blue-700"
             }`}
           >
             <img src="/arrow-up.svg" className="w-6 h-6 mix-blend-screen" />

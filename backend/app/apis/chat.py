@@ -5,7 +5,7 @@ from fastapi import APIRouter, Body, HTTPException, Path
 from fastapi.responses import StreamingResponse
 from app.ai.retriever import get_related_posts
 from app.core.db import create_db_session, get_session
-from app.core.deps import CurrentUser, GetStory, GetMessage, SessionDep
+from app.core.deps import ControlUser, CurrentUser, ExperimentUser, GetStory, GetMessage, SessionDep
 import app.curd as curd
 from app.models.database import Conversation, Story, Message, StoryMessage
 from app.models.interfaces import ChatConversation, ChatStory, ChatMessage, ChatStory, ChatStoryMessage, ChatStorywithoutMessages, ChatUpdateTitle
@@ -14,6 +14,7 @@ from app.ai.story import storymodel
 from app.ai.helper import helpermodel
 from app.ai.topic import topicmodel
 from app.ai.title import titlemodel
+from app.ai.control import controlmodel
 from app.utils import generate_uuid, get_time
 from app.models.dto import StoryDTO, MessageDTO, ConversationDTO, StoryMessageDTO, UserDTO
 
@@ -93,7 +94,8 @@ async def get_title_completions(
 
 @router.post("/completions/story/{story_id}/{message_id}")
 async def get_story_completions(
-    session: SessionDep,   
+    session: SessionDep, 
+    user: ExperimentUser,  
     story: GetStory, 
     last_message: GetMessage,       
     message_content: str = Body(..., embed=True),
@@ -131,6 +133,69 @@ async def get_story_completions(
                 ai_message_to_update.content = final_content
                 if "真实结局" in final_content or "互动结局" in final_content:
                     ai_message_to_update.stage = "completed"
+                
+                story_to_update.updated_at = get_time()
+                
+                final_session.commit()
+
+                yield format_event({
+                    "type": "message",
+                    "value": "",
+                    "done": True,
+                    "id": ai_message_to_update.id, 
+                    "stage": ai_message_to_update.stage,
+                    "conversation_title": ai_message_to_update.conversation.title,
+                })
+            
+        except Exception as e:
+            yield format_event({
+                "type": "error",
+                "value": f"生成响应时出错: {e}",
+                "done" : True,
+            })
+
+    return StreamingResponse(respond(), media_type="text/event-stream")
+
+@router.post("/completions/control/{story_id}/{message_id}")
+async def get_control_completions(
+    session: SessionDep, 
+    user: ControlUser,  
+    story: GetStory, 
+    last_message: GetMessage,       
+    message_content: str = Body(..., embed=True),
+):
+    if last_message.role == "user" or last_message.stage == "completed":
+        raise HTTPException(status_code=400, detail="Cannot reply to this message")
+
+    if last_message.stage == "initial":
+        story.related_post = str(get_related_posts(story.situation))
+    
+    user_message = create_story_message(content=message_content, role="user", story_id=story.id, parent=last_message)
+    ai_message = create_story_message(content="", role="assistant", story_id=story.id, parent=user_message)
+    
+    session.add(user_message)
+    session.add(ai_message)
+    session.commit()
+    last_message_dto = StoryMessageDTO.from_orm(last_message)
+    user_message_dto = StoryMessageDTO.from_orm(user_message)
+    ai_message_dto = StoryMessageDTO.from_orm(ai_message)
+    story_dto = StoryDTO.from_orm(story)
+    session.close()
+
+    async def respond() -> AsyncGenerator[str, None]:
+        try:
+            buffer = StringIO()
+            async for content in generate_response(controlmodel, story_dto, last_message_dto, user_message_dto, ai_message_dto, buffer):
+                yield content
+            final_content= buffer.getvalue()
+            buffer.close()
+
+            with create_db_session() as final_session:
+                ai_message_to_update: StoryMessage = final_session.get(StoryMessage, ai_message_dto.id)
+                story_to_update: Story = final_session.get(Story, story_dto.id)
+
+                ai_message_to_update.content = final_content
+                ai_message_to_update.stage = "completed"
                 
                 story_to_update.updated_at = get_time()
                 

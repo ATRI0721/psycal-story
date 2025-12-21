@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, List
 from sqlalchemy.orm import selectinload
 from sqlmodel import select
     
@@ -11,7 +11,7 @@ from sqlmodel import Session
 from app.core import security
 from app.core.config import settings
 from app.core.db import get_session
-from app.models.database import Conversation, Story, Message, StoryMessage, User
+from app.models.database import Conversation, Story, Message, StoryMessage, User, UserGroup
 
 
 reusable_oauth2 = OAuth2PasswordBearer(tokenUrl="/api/vi/user/login/password")
@@ -38,8 +38,20 @@ def get_current_user(session: SessionDep, token: TokenDep) -> User:
         raise HTTPException(status_code=400, detail="Inactive user")
     return user
 
+def require_group(allowed_groups: List[UserGroup]):
+    def check_group(current_user: CurrentUser) -> User:
+        if current_user.group not in allowed_groups:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Access denied. Required groups: {[g.value for g in allowed_groups]}"
+            )
+        return current_user
+    return check_group
 
 CurrentUser = Annotated[User, Depends(get_current_user)]
+AdminUser = Annotated[User, Depends(require_group([UserGroup.ADMIN]))]
+ExperimentUser = Annotated[User, Depends(require_group([UserGroup.EXPERIMENT, UserGroup.ADMIN]))]
+ControlUser = Annotated[User, Depends(require_group([UserGroup.CONTROL, UserGroup.ADMIN]))]
 
 def get_story(session: SessionDep, current_user: CurrentUser, story_id: str) -> Story:
     # stmt = select(Story).options(

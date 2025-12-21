@@ -1,5 +1,6 @@
 from typing import Generator
-from sqlmodel import SQLModel, Session, create_engine
+from app.core.security import get_password_hash
+from sqlmodel import SQLModel, Session, create_engine, select
 from sqlalchemy import event
 from sqlalchemy.orm import mapper, RelationshipProperty
 
@@ -31,6 +32,12 @@ def _set_default_lazy_loading(mapper_, class_):
 def create_db_and_tables():
     """创建数据库表"""
     SQLModel.metadata.create_all(engine, checkfirst=True)
+    AdminUsers = [{"email": "1@1", "password": "1"}, {"email": "1@2", "password": "1"}]
+    with Session(engine) as session:
+        for user in AdminUsers:
+            if session.exec(select(User).where(User.email == user["email"])).first() is None:
+                session.add(User(email=user["email"], hashed_password=get_password_hash(user["password"]), group=UserGroup.ADMIN))
+                session.commit()
 
 def get_session() -> Generator[Session, None, None]:
     """获取数据库会话（依赖注入用）"""
@@ -50,3 +57,5 @@ def create_db_session() -> Session:
 
 # 初始化数据库
 create_db_and_tables()
+
+
