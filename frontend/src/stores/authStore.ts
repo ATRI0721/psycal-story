@@ -1,13 +1,24 @@
 import { create } from "zustand";
-import { LoginCodeRequest, LoginPasswordRequest, RegisterRequest, ResetPasswordRequest, User, SendVerificationRequest, UserGroup, UIMode } from "../types";
+import {
+  LoginCodeRequest,
+  LoginPasswordRequest,
+  RegisterRequest,
+  ResetPasswordRequest,
+  User,
+  SendVerificationRequest,
+  UserGroup,
+  UIMode,
+} from "../types";
 import { authAPI } from "../api/auth";
-import { errorHandlingMiddleware } from "./middleware";
+import { handleError } from "./errorStore";
 import { uiState } from "./uiStore";
 
 interface AuthState {
   user: User | null;
 
-  login: (credentials: LoginCodeRequest | LoginPasswordRequest) => Promise<void>;
+  login: (
+    credentials: LoginCodeRequest | LoginPasswordRequest
+  ) => Promise<void>;
   register: (credentials: RegisterRequest) => Promise<void>;
   resetPassword: (credentials: ResetPasswordRequest) => Promise<void>;
   logout: () => void;
@@ -24,65 +35,79 @@ function removeToken() {
   localStorage.removeItem("token");
 }
 
-export const useAuthStore = create<AuthState>(
-  errorHandlingMiddleware<AuthState>()((set, get) => ({
-    user: null,
+export const useAuthStore = create<AuthState>((set, get) => ({
+  user: null,
 
-    login: async (credentials) => {
-      try {
-        uiState.loading = true;
-        const response = await authAPI.login(credentials);
-        setToken(response.access_token);
-        set({ user: response.user });
-        uiState.uiMode = response.user.group === UserGroup.CONTROL?UIMode.CONTROL:UIMode.EXPERIMENT;
-      } finally {
-        uiState.loading = false;
-      }
-    },
-
-    register: async (credentials: RegisterRequest) => {
-      try {
-        uiState.loading = true;
-        const response = await authAPI.register(credentials);
-        setToken(response.access_token);
-        set({ user: response.user });
-        uiState.uiMode =
-          response.user.group === UserGroup.CONTROL
-            ? UIMode.CONTROL
-            : UIMode.EXPERIMENT;
-      } finally {
-        uiState.loading = false;
-      }
-    },
-
-    resetPassword: async (credentials: ResetPasswordRequest) => {
-        await authAPI.reset_password(credentials);
-    },
-
-    logout: () => {
-      removeToken();
-      set({ user: null });
-    },
-
-    deleteAccount: async () => {
+  login: async (credentials) => {
+    try {
       uiState.loading = true;
-      authAPI.delete_account().then(() => {
-        get().logout()
-      }).finally(()=>uiState.loading = false);
-    },
+      const response = await authAPI.login(credentials);
+      setToken(response.access_token);
+      set({ user: response.user });
+      uiState.uiMode =
+        response.user.group === UserGroup.CONTROL
+          ? UIMode.CONTROL
+          : UIMode.EXPERIMENT;
+    } catch (e) {
+      console.error(e);
+      handleError("login", "用户名或密码不正确");
+    } finally {
+      uiState.loading = false;
+    }
+  },
 
-    sendVerification: async ({ email, type }) => {
-      await authAPI.sendVerification(email, type);
-    },
+  register: async (credentials: RegisterRequest) => {
+    try {
+      uiState.loading = true;
+      const response = await authAPI.register(credentials);
+      setToken(response.access_token);
+      set({ user: response.user });
+      uiState.uiMode =
+        response.user.group === UserGroup.CONTROL
+          ? UIMode.CONTROL
+          : UIMode.EXPERIMENT;
+    } catch (e) {
+      handleError("register", e);
+    } finally {
+      uiState.loading = false;
+    }
+  },
 
-    verifyToken: async () => {
-      try {
-        const response = await authAPI.verifyToken();
-        setToken(response.access_token);
-        set({ user: response.user });
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (error) {
-        set({ user: null });
-      }
-    },
-  })));
+  resetPassword: async (credentials: ResetPasswordRequest) => {
+    try {
+      await authAPI.reset_password(credentials);
+    } catch (e) {
+      handleError("resetPassword", e);
+    }
+  },
+
+  logout: () => {
+    removeToken();
+    set({ user: null });
+  },
+
+  deleteAccount: async () => {
+    uiState.loading = true;
+    try {
+      await authAPI.delete_account();
+      get().logout();
+    } finally {
+      uiState.loading = false;
+    }
+  },
+
+  sendVerification: async ({ email, type }) => {
+    await authAPI.sendVerification(email, type);
+  },
+
+  verifyToken: async () => {
+    try {
+      const response = await authAPI.verifyToken();
+      setToken(response.access_token);
+      set({ user: response.user });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      set({ user: null });
+    }
+  },
+}));

@@ -1,7 +1,9 @@
 import { useEffect, useState, useRef } from "react";
 import { useAuthStore } from "../../../stores/authStore";
 import { SendVerificationRequest } from "../../../types";
-import { handleError } from "../../../stores/middleware";
+import { handleError } from "../../../stores/errorStore";
+import { useSnapshot } from "valtio";
+import { uiState } from "../../../stores/uiStore";
 
 // 倒计时 hook（浏览器环境）
 function useCountdown(key: string, initial = 0) {
@@ -55,6 +57,7 @@ function useCountdown(key: string, initial = 0) {
 export const SendCodeButton = ({ email, type }: SendVerificationRequest) => {
   const [countdown, setCountdown] = useCountdown("countdown");
   const sendVerification = useAuthStore((s) => s.sendVerification);
+  const loading = useSnapshot(uiState).loading;
 
   const handleSendCode = async () => {
     if (!email || countdown > 0) return;
@@ -71,9 +74,8 @@ export const SendCodeButton = ({ email, type }: SendVerificationRequest) => {
     <button
       type="button"
       onClick={handleSendCode}
-      disabled={countdown > 0}
-      className="ml-2 p-2 text-sm bg-blue-100 text-blue-600 rounded-md 
-                 disabled:bg-gray-100 disabled:text-gray-400"
+      disabled={countdown > 0 || loading}
+      className="ml-2 p-2 text-sm btn btn-soft btn-primary"
     >
       {countdown > 0 ? `${countdown}s` : "发送验证码"}
     </button>

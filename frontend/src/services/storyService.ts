@@ -3,7 +3,7 @@ import chatAPI from "../api/chat";
 import { storyActions, storyGetters, storyState } from "../stores/storyStore";
 import { UIMode, type Message, type StoryMessage, type StreamResponse } from "../types";
 import { uiActions, uiState } from "../stores/uiStore";
-import { handleError } from "../stores/middleware";
+import { handleError } from "../stores/errorStore";
 
 
 // 生成一个简单的临时ID
@@ -104,8 +104,12 @@ export const storyService = {
     }
 
     if (uiActions.getStoryUIState(currentStoryMessage.story_id).loading){
-      handleError("sendMessageToBranch", new Error("Previous message is still loading."));
+      handleError("sendMessageToBranch", new Error("先等待故事生成完吧"));
       return;
+    }
+
+    if (currentStoryMessage.stage === "completed"){
+      handleError("sendMessageToBranch", new Error("当前故事已结束"))
     }
 
     const { story_id } = currentStoryMessage;

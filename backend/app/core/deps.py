@@ -14,7 +14,7 @@ from app.core.db import get_session
 from app.models.database import Conversation, Story, Message, StoryMessage, User, UserGroup
 
 
-reusable_oauth2 = OAuth2PasswordBearer(tokenUrl="/api/vi/user/login/password")
+reusable_oauth2 = OAuth2PasswordBearer(tokenUrl="/api/v1/user/login/password")
 
 SessionDep = Annotated[Session, Depends(get_session)]
 TokenDep = Annotated[str, Depends(reusable_oauth2)]

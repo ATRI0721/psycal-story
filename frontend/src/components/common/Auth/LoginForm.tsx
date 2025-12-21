@@ -2,6 +2,8 @@ import { useState } from "react";
 import { SendCodeButton } from "./SendCodeButton";
 import { useAuthStore } from "../../../stores/authStore";
 import { LoginCodeRequest, LoginPasswordRequest} from "../../../types";
+import { useSnapshot } from "valtio";
+import { uiState } from "../../../stores/uiStore";
 
 type LoginType = "code" | "password";
 
@@ -11,6 +13,7 @@ export const LoginForm = ({ onSwitch }: { onSwitch: () => void }) => {
   const [code, setCode] = useState("");
   const [loginType, setLoginType] = useState<LoginType>("password");
   const login = useAuthStore(s => s.login);
+  const loading = useSnapshot(uiState).loading;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,7 +88,8 @@ export const LoginForm = ({ onSwitch }: { onSwitch: () => void }) => {
 
       <button
         type="submit"
-        className="w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 hover:cursor-pointer"
+        disabled={loading}
+        className="w-full py-2 btn btn-primary text-lg"
       >
         登录
       </button>

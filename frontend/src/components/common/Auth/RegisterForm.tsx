@@ -52,7 +52,8 @@ export const RegisterForm = ({ onSwitch }: { onSwitch: () => void }) => {
 
       <button
         type="submit"
-        className="w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 hover:cursor-pointer"
+        className="w-full py-2 btn btn-primary text-lg"
+        disabled={true}
       >
         注册
       </button>
@@ -62,7 +63,7 @@ export const RegisterForm = ({ onSwitch }: { onSwitch: () => void }) => {
         <button
           type="button"
           onClick={onSwitch}
-          className="text-blue-600 hover:underline"
+          className="text-blue-600 hover:underline hover:cursor-pointer"
         >
           立即登录
         </button>
